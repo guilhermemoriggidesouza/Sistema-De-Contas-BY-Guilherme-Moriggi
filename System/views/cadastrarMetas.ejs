@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+        <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right">
+            <div class="container">
+                <div class="card sombra-borda my-5">
+                    <p class="metas text-center my-4"><i class="fas color-verde mr-3 fa-cash-register"></i>Cadastrar Metas</p>
+                    <form id="formularioInserir" class="px-4">
+                        <div class="row mt-5">
+                            <div class="col-4">
+                                <div class="input-group mb-2">
+                                    <input type="hidden" id="tabela" value="metas">
+                                    <input type="text" class="form-control money" id="valor" placeholder="Valor da Meta" require>
+                                </div>
+                            </div>
+                            <div class="col-5">
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="card text-center">
+                                    <p class="mb-0 py-2">Grana Dispon&iacute;vel para seus sonhos<br><span id="geral">###,##</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row my-5">
+                            <div class="col-8">
+                                <input type="text" class="form-control" id="titulo" placeholder="Titulo do Objetivo" require>
+                            </div>
+                        </div>
+                        <div class="row my-5">
+                            <div class="col-8">
+                                <label for="texto">DIgite seu Texto</label>
+                                <textarea class="form-control" id="texto" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 my-5">
+                                <div id="button-enviar" class="float-right">
+                                    <button type="button" id="buttonInserir" class="btn btn-primary px-5">
+                                        <i class="fas fa-2x fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function navTotal(){
+                var html = $('html').innerHeight()
+                if(html < screen.height){
+                    html = screen.height;
+                }
+                $('.nav-tamanho').css({height: html});
+                console.log(screen.height);
+            }
+            function verificarValor(){
+                $('.fa-share-square').removeClass('color-azul');
+                $('.fa-share-square').addClass('color-verde');
+                $('#button-enviar').removeClass('d-none');
+            }
+            jQuery(function($){
+                function carregarDados(query, tipo){
+                    let id = $('#principal').data('id');
+                    console.log(id);
+                    $.get('/carregarDados', {sql: query}).done(function(data){
+                        if(tipo == "link-salario"){
+                            montarSalario(data)
+                        }
+                        if(tipo == 'poupanca-pg-inicial'){
+                            let soma = 0;
+                            for(i=0;i<data.length;i++){
+                                soma += data[i].valor;
+                            }
+                            $('#geral').html(soma);
+                        }
+                    })
+                }
+                $(document).ready(function(){
+                    $('#buttonInserir').on('click', function(){
+                        //var formData = new FormData($('#formularioInserir'));
+                        var tabela = $('#tabela').val(),
+                            valor = $('#valor').val(),
+                            titulo = $('#titulo').val(),
+                            texto = $('#texto').val(),
+                            sql = 'INSERT INTO '+tabela+' VALUES (null, '+parseInt(valor)+', "'+titulo+'", "'+texto+'", "P")';
+                        //$("#btnSubmit").prop("disabled", true);
+                        $.post('/inserirDados', {sql: sql}).done(function(data){
+                            if(data.affectedRows == 1){
+                                let confirmar = confirm('Meta foi incluida com sucesso');
+                                if(confirmar == true){
+                                    window.location.href = '/metas'; 
+                                }
+                            }else{
+                                alert('n?o foi possivel inserir a meta');
+                            }
+                        }).fail(function(data){
+                            alert(data);
+                        })
+                    })
+                    carregarDados('SELECT * FROM poupanca','poupanca-pg-inicial');
+                    var owl = $('#owl-demo').owlCarousel({
+                        loop:true,
+                        margin:70,
+                        center:false,
+                        nav:false,
+                        dots:true,
+                        autoplay:true,
+                        autoplayTimeout:3000,
+                        autoplayHoverPause:true,
+                        responsive:{
+                            0:{
+                                items:1
+                            },
+                            600:{
+                                items:1
+                            },
+                            900:{
+                                items:3
+                            },
+                            
+                        }
+                    });
+                    navTotal();
+                })  
+            });
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

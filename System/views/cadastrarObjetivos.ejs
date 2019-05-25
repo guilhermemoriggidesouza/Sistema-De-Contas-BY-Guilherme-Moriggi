@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+        <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right" id="principal" data-id="<%=dados.idsalario%>" data-valorfixo="<%=dados.valorFixo%>"  data-valorresto="<%=dados.valorResto%>">
+            <div class="container">
+                <div class="card sombra-borda my-5">
+                    <p class="metas text-center my-4"><i class="fas color-azul mr-3 fa-cash-register"></i>Cadastrar Objetivos</p>
+                    <form action="" class="px-4">
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="valor" placeholder="primeiramente valide o valor" require>
+                                    <a href="javascript:verificarValor()" class="a-none">
+                                        <div class="input-group-prepend h-100">
+                                            <div class="input-group-text p-0 px-3 h-100"><i class="fas color-azul fa-share-square"></i></div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                            </div>
+                            <div class="col-3 text-center">
+                                <div class="card text-center">
+                                    <p class="mb-0 py-2">Salario do M&ecirc;s para usar : <br><span><%=dados.valorResto%></span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row my-5">
+                            <div class="col-8">
+                                <input type="text" class="form-control" id="titulo" placeholder="Titulo do Objetivo" require>
+                            </div>
+                        </div>
+                        <div class="row my-5">
+                            <div class="col-8">
+                                <label for="texto">Digite seu Texto</label>
+                                <textarea class="form-control" id="texto" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 my-5">
+                                <div class="float-right">
+                                    <a id="button-enviar" class="d-none btn btn-success px-5">
+                                        <i class="fas fa-2x fa-paper-plane"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function navTotal(){
+                var html = $('html').innerHeight()
+                if(html < screen.height){
+                    html = screen.height;
+                }
+                $('.nav-tamanho').css({height: html});
+                console.log(screen.height);
+            }
+            function verificarValor(){
+                var valor = $('#valor').val();
+                var resto = $('#principal').data('valorresto');
+                if(valor <= resto){
+                    $('.fa-share-square').removeClass('color-azul');
+                    $('.fa-share-square').removeClass('color-red');
+                    $('.fa-share-square').addClass('color-verde');
+                    $('#button-enviar').removeClass('d-none');
+                }else{
+                    $('.fa-share-square').removeClass('color-verde');
+                    $('.fa-share-square').removeClass('color-azul');
+                    $('.fa-share-square').addClass('color-red');
+                    $('#button-enviar').addClass('d-none');
+                }
+               
+            }
+            jQuery(function($){
+                $(document).ready(function(){
+                    $('#button-enviar').on('click', function(){
+                        var valor = $('#valor').val();
+                        var resto = $('#principal').data('valorresto');
+                        if(valor <= resto){
+                                var tabela = "objetivos",
+                                valor = $('#valor').val(),
+                                titulo = $('#titulo').val(),
+                                texto = $('#texto').val(),
+                                idsalario = $('#principal').data('id'),
+                                sql = "INSERT INTO "+tabela+" VALUES (null, "+parseInt(valor)+", '"+titulo+"', '"+texto+"','P',"+parseInt(idsalario)+")";
+                            $("#btnSubmit").prop("disabled", true);
+                            console.log(idsalario);
+                            $.post('/inserirDados', {sql: sql}).done(function(data){
+                                if(data.affectedRows == 1){
+                                    let confirmar = confirm('Objetivo foi incluida com sucesso');
+                                    if(confirmar == true){
+                                        window.location.href = '/objetivos'; 
+                                    }
+                                }else{
+                                    alert('não foi possivel inserir o objetivo');
+                                }
+                            }).fail(function(data){
+                                alert(data);
+                            })
+                        }
+                    })
+                    var owl = $('#owl-demo').owlCarousel({
+                        loop:true,
+                        margin:70,
+                        center:false,
+                        nav:false,
+                        dots:true,
+                        autoplay:true,
+                        autoplayTimeout:3000,
+                        autoplayHoverPause:true,
+                        responsive:{
+                            0:{
+                                items:1
+                            },
+                            600:{
+                                items:1
+                            },
+                            900:{
+                                items:3
+                            },
+                            
+                        }
+                    });
+                    navTotal();
+                })  
+            });
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

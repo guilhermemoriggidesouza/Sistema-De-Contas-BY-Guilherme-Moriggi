@@ -1,0 +1,23 @@
+{
+  "name": "bancodeu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "consign": "^0.1.6",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "express-ejs-layouts": "^2.5.0",
+    "express-session": "^1.16.1",
+    "mysql": "^2.16.0",
+    "node": "^11.13.0",
+    "nodemon": "^1.18.10",
+    "owl.carousel": "^2.3.4"
+  }
+}

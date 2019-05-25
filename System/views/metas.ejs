@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+        <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right">
+            <div class="container">
+                <div class="card sombra-borda my-5">
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-12 text-center">
+                            <p class="metas">Metas Importantes</p>
+                            <div id="owl-demoP" class="px-4 owl-carousel owl-theme">
+                                
+                            </div>
+                        </div>
+                        <div class="col-12 text-center">
+                            <p class="infos-salarios" id="somarMetasP"></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-12 text-center">
+                            <p class="metas">Metas Concluidas</p>
+                            <div id="owl-demoC" class="px-4 owl-carousel owl-theme">
+                                
+                            </div>
+                        </div>
+                        <div class="col-12 text-center">
+                            <p class="infos-salarios" id="somarMetasC"></p>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center my-2">
+                        <div class="col-4 text-center my-3">
+                            <a href="/cadastrarMetas" class="w-100 btn btn-dark">Cadastrar Metas</a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function navTotal(){
+                var html = $('html').innerHeight()
+                if(html < screen.height){
+                    html = screen.height;
+                }
+                $('.nav-tamanho').css({height: html});
+                console.log(screen.height);
+            }
+            function concluirMeta(id, valor){
+                var confirmarDelete = confirm('Você deseja concluir essa meta de '+valor+' e ficar mais próximo dos seus sonhos ??');
+                if(confirmarDelete == true){
+                    var xhr = new XMLHttpRequest();
+                    var data = {    
+                                tipo: 'metas',
+                                sql: 'UPDATE metas SET status = "C" WHERE idmeta = '+id+' LIMIT 1',
+                                id: id,
+                                valor: valor,
+                            }
+                    xhr.open("PUT", "/updateDados/"+id);
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onload = function(){
+                        var data = this.response;
+                        console.log(data);
+                        var confirmado = confirm(data);
+                        if(confirmado == true){
+                            window.location.href="/paginaPrincipal";
+                        }
+                    }
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+            function removerMeta(id){
+                var confirmarDelete = confirm('TEM CERTEZA DISS0O AE MANO ???????? SE DEU MISS CLICK SÃ“ CLICA EM CANCEL PFF...');
+                if(confirmarDelete == true){
+                    var xhr = new XMLHttpRequest();
+                    var sql = 'DELETE FROM metas WHERE idmeta = '+id+' LIMIT 1';
+                    var data = {    
+                                tipo: 'metas',
+                                sql:sql
+                            }
+                    xhr.open("DELETE", "/deletarDados");
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onload = function(){
+                        var data = this.response;
+                        var confirmado = confirm(data);
+                        if(confirmado == true){
+                            window.location.href="/metas";
+                        }
+                    }
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+            jQuery(function($){
+                function montarPoupanca(data, id){
+                    let mes;
+                    let soma = 0;
+                    for(i=0;i<data.length;i++){
+                        if(data[i].salario_fk == id){
+                            mes = data[i].valor;
+                        }
+                        soma += data[i].valor;
+                    }
+                    carregarMetas('SELECT * FROM metas WHERE status = "P" ORDER BY idmeta DESC', 'P', soma);
+                    carregarMetas('SELECT * FROM metas WHERE status = "C" ORDER BY idmeta DESC', 'C', soma);
+                }
+                function montarMetas(metaTipo, sql, valorPoupanca){
+                    $.get('/carregarDados',{sql:sql}).done(function(dados){
+                            console.log(metaTipo);
+                            console.log(dados);
+                            let concluir = '';
+                            let meta = '';
+                            let soma = 0; 
+                            let remover = ''
+                            for(i=0; i<dados.length; i++){
+                                soma += dados[i].valor;
+                                concluir = '';
+                                if(metaTipo == 'P'){
+                                    remover = '<a href="javascript:removerMeta('+dados[i].idmeta+')" class="a-none"><div class="w-100 remover p-3"><p class="font-remover m-0">Remover</p></div></a>';
+                                    if(dados[i].valor <= valorPoupanca){
+                                        concluir = '<a href="javascript:concluirMeta('+dados[i].idmeta+', '+dados[i].valor+')" class="a-none"><div class="w-100 concluir p-3"><p class="font-concluir m-0">Concluir</p></div></a>';
+                                    }
+
+                                }
+                                meta += '<div class="item"><div class="row"><div class="col-12"><div class="card sombra-borda"><div class="card-body"><h5 class="card-title">META: '+dados[i].titulo+'</h5><p class="card-text">'+dados[i].texto+'</p><p>valor:'+dados[i].valor+'</p></div><div class="card-footer text-center p-0">'+concluir+remover+'</div></div></div></div></div>';
+                            }
+                            $('#owl-demo'+metaTipo).html(meta);
+                            $('#somarMetas'+metaTipo).html('Soma Das Metas: '+soma);
+                            var owl = $('#owl-demo'+metaTipo).owlCarousel({
+                                loop:true,
+                                margin:70,
+                                center:false,
+                                nav:false,
+                                dots:true,
+                                autoplay:true,
+                                autoplayTimeout:3000,
+                                autoplayHoverPause:true,
+                                responsive:{
+                                    0:{
+                                        items:1
+                                    },
+                                    600:{
+                                        items:1
+                                    },
+                                    900:{
+                                        items:3
+                                    },
+                                    
+                                }
+                            });
+                            navTotal()
+                        }).fail(function(data){
+                            alert(data)
+                        }) 
+                }
+                function carregarDados(query, tipo){
+                    let id = $('#principal').data('id');
+                    console.log(id);
+                    $.get('/carregarDados', {sql: query}).done(function(data){
+                        if(tipo == "link-salario"){
+                            montarSalario(data)
+                        }
+                        if(tipo == 'poupanca-pg-inicial'){
+                            montarPoupanca(data, id);
+                        }
+                        navTotal();
+                    })
+                }
+                function carregarMetas(sql, tipo, valorPoupanca){
+                    if(tipo == 'P'){
+                        montarMetas('P', sql, valorPoupanca);
+                    }
+                    if(tipo == 'C'){
+                        montarMetas('C', sql, valorPoupanca);
+                    }
+                }
+                $(document).ready(function(){
+                    carregarDados('SELECT * FROM poupanca ', 'poupanca-pg-inicial');                    
+                    navTotal();
+                })  
+            });
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

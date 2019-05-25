@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+        <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right" id="principal" data-id="<%=dados.idsalario%>" data-valorfixo="<%=dados.valorFixo%>"  data-valorresto="<%=dados.valorResto%>">
+            <div class="container">
+                <div class="row justify-content-end">
+                    <div class="col-4 text-right my-4">
+                            <a id="destroy" class="a-none color-red pointer"><i class="fas fa-bomb"></i>Destruir Sessão</a>
+                        </div>
+                </div>
+                <div class="card sombra-borda my-5" >
+                    <div class="row justify-content-center">
+                        <% if(dados.length == 0){ %>
+                        <div class="col-8 text-center my-4">
+                            <p class="metas"><i class="fas mr-3 fa-sign-in-alt"></i>Cadastrar Salario</p>
+                            <hr>
+                        </div>
+                        
+                        <% }else{ %>
+                        <div class="col-8 text-center mb-5">
+                            <p class="metas"><i class="fas mr-3 fa-calendar-check"></i>Salario do Mês: <%=dados.mes%></p>
+                            <hr>
+                            <p class="infos-salarios">resto: <%=dados.valorResto %></p>
+                            <p class="infos-salarios">total: <%=dados.valorFixo %></p>
+                        </div>
+                        
+                        <% } %>
+                        <div class="col-12 text-center my-4">
+                                <a href="#salario" class="a-none"><p class="infos-salarios">Selecione Seu Salario</p></a>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-8 text-center">
+                            <div class="card sombra-borda py-5">
+                                <% if(dados.length == 0){ %>
+                                <form action="">
+                                    <div class="row justify-content-center">
+                                        <div class="col-4 text-center">
+                                            <label class="sr-only" for="valorSalario">Adicione seu Salário</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control" id="valorSalario" placeholder="Digite seu Salário">
+                                                <a id="button-criar" class="a-none">
+                                                    <div class="input-group-prepend h-100">
+                                                        <div class="input-group-text p-0 px-3 h-100"><i class="fas color-verde fa-money-bill-wave"></i></div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <% }else{ %>
+                                <form action="">
+                                    <div class="row justify-content-center">
+                                        <div class="col-4 text-center">
+                                            <label for="subtrair">Subtraia do seu Salário</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control" id="subtrair" placeholder="Digite seu Salário">
+                                                <a id="buttonSubtrair"class="a-none">
+                                                    <div class="input-group-prepend h-100">
+                                                        <div class="input-group-text p-0 px-3 h-100"><i class="fas color-red fa-minus"></i></div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center">
+                                        <div class="col-4 text-center">
+                                            <label for="somar">Somar do seu Salário</label>
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control" id="somar" placeholder="Digite seu Salário">
+                                                <a id="buttonSomar" class="a-none">
+                                                    <div class="input-group-prepend h-100">
+                                                        <div class="input-group-text p-0 px-3 h-100"><i class="fas color-verde fa-plus"></i></div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="salario" class="row justify-content-center my-5">
+                        <div class="col-8 text-center">
+                            <div class="card sombra-borda py-5">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 text-center">
+                                        <p class="metas">Selecione um salário</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div data-spy="scroll" id="scrollspy" class="scrollSpy" data-target="#navbar-example2" data-offset="0">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function definirSessionSalario(id){
+                //console.log(dados);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "sessionSalario");
+				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onload = function(){
+                    var data = this.response;
+                    var confirmado = confirm(data);
+                    if(confirmado == true){
+                        window.location.href="/paginaPrincipal";
+                    }
+
+                    //console.log('teste');
+                }
+                xhr.send('id='+id);
+            }
+            function excluirInfo(id){
+                var confirmarDelete = confirm('TEM CERTEZA DISS0O AE MANO ???????? SE DEU MISS CLICK SÓ CLICA EM CANCEL PFF...');
+                if(confirmarDelete == true){
+                    var xhr = new XMLHttpRequest();
+                    var sql = 'DELETE FROM salario WHERE idsalario = '+id+' LIMIT 1';
+                    var secondSql = 'DELETE FROM poupanca WHERE salario_fk = '+id+' LIMIT 1';
+
+                    var data = {    
+                                    tipo: 'salario',
+                                    sql:sql,
+                                    secondSql: secondSql
+                                }
+                    xhr.open("DELETE", "/deletarDados");
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onload = function(){
+                        var data = this.response;
+                        var confirmado = confirm(data);
+                        if(confirmado == true){
+                            document.getElementById('destroy').click();
+                            //window.location.href="/salarios";
+                        }
+                    }
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+            (function ($) {
+                function navTotal(){
+                    var html = $('html').innerHeight()
+                    if(html < screen.height){
+                        html = screen.height;
+                    }
+                    $('.nav-tamanho').css({height: html});
+                    console.log(screen.height);
+                }
+                console.log ("jquery?", $ == jQuery);
+                function montarSalario(dados){
+                    let aMontado = '';
+                    for(i=0; i<dados.length; i++){
+                        aMontado +='<p class="pointer"><i onclick="excluirInfo('+dados[i].idsalario+')" class="fas color-red fa-2x fa-times mr-5"></i><b onclick="definirSessionSalario('+dados[i].idsalario+')" class="d-inline"><i class="fas mr-1 color-verde fa-money-bill-wave"></i>'+dados[i].valorFixo+'   </b>'+dados[i].mes+'<p>';
+                    }
+                    $('#scrollspy').html(aMontado);
+                }
+                function carregarDados(query, tipo){
+                    $.get('/carregarDados', {sql: query}).done(function(data){
+                        if(tipo == "link-salario"){
+                            montarSalario(data)
+                        }
+                    })
+                }
+                function formarMes(valor){
+                    let mes = valor+1
+                    switch(mes){
+                        case 1:
+                            mes = 'Janeiro';
+                            break;
+                        case 2:
+                            mes = 'Fevereiro';
+                            break;
+                        case 3:
+                            mes = 'Março';
+                            break;
+                        case 4:
+                            mes = 'Abril';
+                            break;
+                        case 5:
+                            mes = 'Maio';
+                            break;
+                        case 6:
+                            mes = 'Junho';
+                            break;
+                        case 7:
+                            mes = 'Julho';
+                            break;
+                        case 8:
+                            mes = 'Agosto';
+                            break;
+                        case 9:
+                            mes = 'Setembro';
+                            break;
+                        case 10:
+                            mes = 'Outubro';
+                            break;
+                        case 11:
+                            mes = 'Novembro';
+                            break;
+                        case 12:
+                            mes = 'Dezembro';
+                            break;
+                        default:
+                            mes = 'indefinido';
+                            break;
+                    }
+                    return mes;
+                }
+                function addSalario(salarioNew, salario){
+                    let date = new Date();
+                    let data = date.getMonth()
+                    console.log("salario New "+salarioNew);
+                    let query = 'INSERT INTO salario VALUES (null, '+parseInt(salario)+', '+parseInt(salarioNew)+', "'+formarMes(data)+'")';
+                    $.get('/adicionarSalario', {sql: query}).done(function(data){
+                        console.log(data.results);
+                        console.log(data.selectResults);
+                        console.log(data.insertResults);
+                        if(data.results.affectedRows == 1 && data.selectResults.length == 1 &&  data.insertResults.affectedRows == 1){
+                            let confirmar = confirm('salario foi inserido e poupança criada');
+                            if(confirmar == true){
+                                window.location.href="/salarios";
+                            }
+                        }
+                    })
+                }
+                $(document).ready(function(){
+                    $('#destroy').on('click', function(){
+                        $.get('/destruirSession')
+                        .done(function(data){
+                            let confirmar = confirm(data);
+                            console.log(data);
+                            if(confirmar == true){
+                                window.location.href="/salarios";
+                            }
+                        })
+                        .fail(function(data){
+                            console.log(data);
+                            let confirmar = confirm(data);
+                            if(confirmar == true){
+                                window.location.href="/salarios";
+                            }
+                        })
+                    })
+                    $('#button-criar').on('click', function(){
+                        //alert("click");
+                        $.get('/carregarDados', {sql: "SELECT idsalario, valorResto FROM salario ORDER BY idsalario DESC"}).done(function(retorno){
+                            if(retorno[0] != undefined){
+                                let salario = $('#valorSalario').val();
+                                let salarioNew = parseInt(salario)+retorno[0].valorResto;
+                                let dataBody = {
+                                        sql:"UPDATE salario SET valorResto = 0 WHERE idsalario = "+retorno[0].idsalario+" LIMIT 1",
+                                        tipo: "salario"
+                                    }
+                                $.ajax({
+                                    method: 'PUT',
+                                    data: dataBody,
+                                    url:'/updateDados/'+retorno[0].idsalario,
+                                    success: function(dadosPut){
+                                        alert("bonus = "+ retorno[0].valorResto);
+                                        addSalario(salarioNew, salario);
+                                    }
+                                }).fail(function(data){
+                                    console.log(data);
+                                })
+                            }else{
+                                let salarioNew = $('#valorSalario').val();
+                                let salario = salarioNew;
+                                addSalario(salarioNew, salario);
+                            }
+                        }).fail(function(data){
+                            alert("error");
+                            alert(data);
+                        })
+                        
+                    })
+                    $('#buttonSomar').on('click', function(){
+                        let id = $('#principal').data('id');
+                        let valorF = $('#principal').data('valorfixo');
+                        let valorR = $('#principal').data('valorresto');
+                        let valor = $('#somar').val();
+                        let result = parseInt(valorF)+parseInt(valor);
+                        let resultResto = parseInt(valorR)+parseInt(valor);
+                        let sql = 'UPDATE salario SET valorFixo ='+result+', valorResto = '+resultResto+' WHERE idsalario = '+id+' LIMIT 1';
+                        let data = {
+                            tipo: 'salario',
+                            sql: sql
+                        }
+                        //alert(valorF+'<br>'+valorR+'<br>'+valor)
+                        $.ajax({
+                            method: 'PUT',
+                            data: data,
+                            url:'/updateDados/'+id,
+                            success: function(data){
+                                let confirmar = confirm('Foi Modificado: '+ data);
+                                if(confirmar == true){
+                                    definirSessionSalario(id);
+                                }
+                            }
+                        }).fail(function(data){
+                            console.log(data);
+                        })
+
+                    })
+                    $('#buttonSubtrair').on('click', function(){
+                        let id = $('#principal').data('id');
+                        let valorF = $('#principal').data('valorfixo');
+                        let valorR = $('#principal').data('valorresto');
+                        let valor = $('#subtrair').val();
+                        let result = parseInt(valorF)-parseInt(valor);
+                        let resultResto = parseInt(valorR)-parseInt(valor);
+                        let sql = 'UPDATE salario SET valorFixo ='+result+', valorResto = '+resultResto+' WHERE idsalario = '+id+' LIMIT 1';
+                        let data = {
+                            tipo: 'salario',
+                            sql: sql
+                        }
+                        //alert(valorF+'<br>'+valorR+'<br>'+valor)
+                        $.ajax({
+                            method: 'PUT',
+                            data: data,
+                            url:'/updateDados/'+id,
+                            success: function(data){
+                                let confirmar = confirm('Foi Modificado: '+ data);
+                                if(confirmar == true){
+                                    definirSessionSalario(id);
+                                }
+                            }
+                        }).fail(function(data){
+                            console.log(data);
+                        })
+
+                    })
+                    var owl = $('#owl-demo').owlCarousel({
+                        loop:true,
+                        margin:70,
+                        center:false,
+                        nav:false,
+                        dots:true,
+                        autoplay:true,
+                        autoplayTimeout:3000,
+                        autoplayHoverPause:true,
+                        responsive:{
+                            0:{
+                                items:1
+                            },
+                            600:{
+                                items:1
+                            },
+                            900:{
+                                items:3
+                            },
+                            
+                        }
+                    });
+                    carregarDados('SELECT * FROM salario ORDER BY idsalario DESC', 'link-salario');
+                    navTotal();
+                })  
+            })(jQuery);
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

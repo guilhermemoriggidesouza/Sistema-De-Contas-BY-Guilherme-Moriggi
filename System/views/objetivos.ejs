@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+        <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right" id="principal" data-id="<%=dados.idsalario%>" data-valorfixo="<%=dados.valorFixo%>"  data-valorresto="<%=dados.valorResto%>">
+            <div class="container">
+                <div class="card sombra-borda my-5">
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-12 text-center">
+                            <p class="metas">objetivos Importantes</p>
+                            <div id="owl-demoP" class="px-4 owl-carousel owl-theme">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mt-4">
+                        <div class="col-12 text-center">
+                            <p class="metas">objetivos Completos</p>
+                            <div id="owl-demoC" class="px-4 owl-carousel owl-theme">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cadastro" class="row justify-content-center my-2">
+                        <div class="col-12 text-center">
+                            <p class="infos-salarios">Soma das objetivos: <span id="somarobjetivos"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function definirSessionSalario(id){
+                //console.log(dados);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "sessionSalario");
+				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onload = function(){
+                    var data = this.response;
+                    var confirmado = confirm(data);
+                    if(confirmado == true){
+                        window.location.href="/paginaPrincipal";
+                    }
+
+                    //console.log('teste');
+                }
+                xhr.send('id='+id);
+            }
+            function removerObjetivo(id){
+                var confirmarDelete = confirm('TEM CERTEZA DISS0O AE MANO ???????? SE DEU MISS CLICK SÓ CLICA EM CANCEL PFF...');
+                if(confirmarDelete == true){
+                    var xhr = new XMLHttpRequest();
+                    var sql = 'DELETE FROM objetivos WHERE idobjetivos = '+id+' LIMIT 1';
+                    var data = {    
+                                tipo: 'metas',
+                                sql:sql
+                            }
+                    xhr.open("DELETE", "/deletarDados");
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onload = function(){
+                        var data = this.response;
+                        var confirmado = confirm(data);
+                        if(confirmado == true){
+                            window.location.href="/objetivos";
+                        }
+                    }
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+            function concluirObjetivo(id, valorSalario, valor, idsalario){
+                var confirmarDelete = confirm('Você deseja concluir esse Objetivo de '+valor+' e ficar mais próximo dos seus sonhos ??');
+                if(confirmarDelete == true){
+                    var xhr = new XMLHttpRequest();
+                    var data = {    
+                                tipo: 'objetivo',
+                                sql: 'UPDATE objetivos SET status = "C" WHERE idobjetivos = '+id+' LIMIT 1',
+                                idsalario: idsalario,
+                                valor: (valorSalario-valor),
+                            }
+                    xhr.open("PUT", "/updateDados/"+id);
+                    xhr.setRequestHeader("Content-type", "application/json");
+                    xhr.onload = function(){
+                        var data = this.response;
+                        console.log(data);
+                        var confirmado = confirm(data);
+                        if(confirmado == true){
+                            definirSessionSalario(idsalario)
+                            window.location.href="/paginaPrincipal";
+                        }
+                    }
+                    xhr.send(JSON.stringify(data));
+                }
+            }
+            function navTotal(){
+                var html = $('html').innerHeight()
+                if(html < screen.height){
+                    html = screen.height;
+                }
+                $('.nav-tamanho').css({height: html});
+                console.log(screen.height);
+            }
+            jQuery(function($){
+                function montarObjetivo(objTipo, sql, valorSalarioResto=0){
+                    $.get('/carregarDados',{sql:sql}).done(function(dados){
+                        let concluir = '';
+                        let objetivo = '';
+                        let soma = 0; 
+                        let remover = ''
+                        for(i=0; i<dados.length; i++){
+                            soma += dados[i].valor;
+                            concluir = '';
+                            if(objTipo == 'P'){
+                                remover = '<a href="javascript:removerObjetivo('+dados[i].idobjetivos+')" class="a-none"><div class="w-100 remover p-3"><p class="font-remover m-0">Remover</p></div></a>';
+                                if(dados[i].valor <= valorSalarioResto){
+                                    concluir = '<a href="javascript:concluirObjetivo('+dados[i].idobjetivos+', '+valorSalarioResto+', '+dados[i].valor+', '+dados[i].salario_fk+')" class="a-none"><div class="w-100 concluir p-3"><p class="font-concluir m-0">Concluir</p></div></a>';
+                                }
+
+                            }
+                            objetivo += '<div class="item"><div class="row"><div class="col-12"><div class="card sombra-borda"><div class="card-body"><h5 class="card-title">objetivo: '+dados[i].titulo+'</h5><p class="card-text">'+dados[i].texto+'</p><p>valor:'+dados[i].valor+'</p></div><div class="card-footer text-center p-0">'+concluir+remover+'</div></div></div></div></div>';
+                        }
+                        $('#owl-demo'+objTipo).html(objetivo);
+                        $('#somarobjetivos'+objTipo).html('Soma Das objetivos: '+soma);
+                        var owl = $('#owl-demo'+objTipo).owlCarousel({
+                            loop:true,
+                            margin:70,
+                            center:false,
+                            nav:false,
+                            dots:true,
+                            autoplay:true,
+                            autoplayTimeout:3000,
+                            autoplayHoverPause:true,
+                            responsive:{
+                                0:{
+                                    items:1
+                                },
+                                600:{
+                                    items:1
+                                },
+                                900:{
+                                    items:3
+                                },
+                                
+                            }
+                        });
+                        navTotal()
+                    }).fail(function(data){
+                        console.log(data);
+                    }) 
+                }
+                function liberarCadastro(){
+                    let salario = $('#principal').data('id');
+                    console.log(salario);
+                    if(salario != ""){
+                        $('#cadastro').append('<div class="col-4 text-center my-3"><a href="/cadastrarObjetivos" class="w-100 btn btn-dark">Cadastrar objetivos</a></div>')
+                    }
+                }
+                $(document).ready(function(){
+                    liberarCadastro();
+                    let salario = $('#principal').data('id');
+                    let salarioResto = $('#principal').data("valorresto");
+                    montarObjetivo("P", "SELECT * FROM objetivos WHERE salario_fk ="+salario+" AND status = 'P'", salarioResto);
+                    montarObjetivo("C", "SELECT * FROM objetivos ");
+                    
+                    navTotal();
+                })  
+            });
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

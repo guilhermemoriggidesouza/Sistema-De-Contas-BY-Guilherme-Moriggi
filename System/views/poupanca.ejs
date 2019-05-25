@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <!-- NAVBAR PRINCIPAL -->
+       <% include ./partials/header %>
+        <!-- FIM NAVBAR PRINCIPAL -->
+
+        <div class="w-85 float-right" id="principal" data-id="<%=dados.idsalario%>" data-valorresto="<%=dados.valorResto%>">
+            <div class="container card sombra-borda my-5">
+                <div class="row justify-content-center">
+                    <div class="col-12 text-center">
+                        <p class="metas">Poupança Geral</p>
+                        <p class="metas" id="geral"></p> 
+                    </div>
+                </div>
+                <%if(dados.idsalario>0){%>
+                <div class="row justify-content-center">
+                    <div class="col-12 text-center">
+                        <p class="metas">Poupança Do Salario do mês de <%=dados.mes%></p>
+                        <p class="metas" id="mes"></p> 
+                    </div> 
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        <form action="">
+                            <div class="row justify-content-center">
+                                <div class="col-4 text-center">
+                                    <label class="sr-only" for="somar">Somar do seu Salário</label>
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" id="somar" placeholder="Digite um Valor">
+                                        <a id="buttonSomar" class="a-none">
+                                            <div class="input-group-prepend h-100">
+                                                <div class="input-group-text p-0 px-3 h-100"><i class="fas color-verde fa-plus"></i></div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-4 text-center">
+                                    <label class="sr-only" for="subtrair">Subtraia do seu salario</label>
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" id="subtrair" placeholder="Digite um Valor">
+                                        <a id="buttonSubtrair" class="a-none">
+                                            <div class="input-group-prepend h-100">
+                                                <div class="input-group-text p-0 px-3 h-100"><i class="fas color-red fa-minus"></i></div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <%}%>
+               
+            </div>
+        </div>
+
+        <script>
+            function navTotal(){
+                var html = $('html').innerHeight()
+                if(html < screen.height){
+                    html = screen.height;
+                }
+                $('.nav-tamanho').css({height: html});
+                console.log(screen.height);
+            }
+            function definirSessionSalario(id){
+                //console.log(dados);
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "sessionSalario");
+				xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onload = function(){
+                    var data = this.response;
+                    var confirmado = confirm(data);
+                    if(confirmado == true){
+                        window.location.href="/paginaPrincipal";
+                    }
+
+                    //console.log('teste');
+                }
+                xhr.send('id='+id);
+            }
+            function montarPoupanca(data, id){
+                let mes;
+                let soma = 0;
+                for(i=0;i<data.length;i++){
+                    if(data[i].salario_fk == id){
+                        mes = data[i].valor;
+                    }
+                    soma += data[i].valor;
+                }
+                $('#geral').html(soma);
+                $('#mes').html(mes);
+                $('#principal').attr("data-valor", mes);
+                navTotal()
+            }
+            jQuery(function($){
+                function carregarDados(query, tipo){
+                    let id = $('#principal').data('id');
+                    console.log(id);
+                    $.get('/carregarDados', {sql: query}).done(function(data){
+                        if(tipo == "link-salario"){
+                            montarSalario(data)
+                        }
+                        if(tipo == 'poupanca-pg-inicial'){
+                            montarPoupanca(data, id);
+                        }
+                        navTotal()
+                    })
+                }
+                $(document).ready(function(){
+                    carregarDados('SELECT * FROM poupanca ', 'poupanca-pg-inicial');
+                    $('#buttonSomar').on('click', function(){
+                        let id = $('#principal').data('id');
+                        let valorMes = $('#principal').data('valor');
+                        let valorResto = $('#principal').data('valorresto');
+                        let valor = $('#somar').val();
+                        let valorResult = parseInt(valor)+parseInt(valorMes);
+                        let valorTiraSal = parseInt(valorResto)-parseInt(valor);
+                        alert(valorResult);
+                        let sql = 'UPDATE poupanca SET valor='+valorResult+' WHERE salario_fk = '+id+' LIMIT 1';
+                        let secondSql = 'UPDATE salario SET valorResto= '+valorTiraSal+' WHERE idsalario='+id+' LIMIT 1'
+                        let data = {
+                            tipo: 'poupanca',
+                            acao:'somar',
+                            sql: sql,
+                            valor: valor,
+                            secondSql : secondSql
+                        }
+                        $.ajax({
+                            method: 'PUT',
+                            data: data,
+                            url:'/updateDados/'+id,
+                            success: function(data){
+                                let confirmar = confirm(data);
+                                if(confirmar == true){
+                                    definirSessionSalario(id);
+                                }
+                                navTotal()
+                            },
+                        }).fail(function(data){
+                            alert(data.responseText);
+                        })
+
+                    })
+                    
+                    $('#buttonSubtrair').on('click', function(){
+                        let id = $('#principal').data('id');
+                        let valorMes = $('#principal').data('valor');
+                        let valorResto = $('#principal').data('valorresto');
+                        let valor = $('#subtrair').val();
+                        if(valorMes < valor){
+                            alert('Você inseriu um valor muito alto');
+                        }else{
+                            let valorResult = parseInt(valorMes)-parseInt(valor);
+                            let valorTiraSal = parseInt(valorResto)+parseInt(valor);
+                            alert(valorResult);
+                            let sql = 'UPDATE poupanca SET valor='+valorResult+' WHERE salario_fk = '+id+' LIMIT 1';
+                            let secondSql = 'UPDATE salario SET valorResto= '+valorTiraSal+' WHERE idsalario='+id+' LIMIT 1'
+                            let data = {
+                                tipo: 'poupanca',
+                                acao: 'subtrair',
+                                sql: sql,
+                                valor: valor,
+                                secondSql : secondSql
+                            }
+                            $.ajax({
+                                method: 'PUT',
+                                data: data,
+                                url:'/updateDados/'+id,
+                                success: function(data){
+                                    let confirmar = confirm(data);
+                                    if(confirmar == true){
+                                        definirSessionSalario(id);
+                                    }
+                                    navTotal()
+                                },
+                            }).fail(function(data){
+                                alert(data.responseText);
+                            })
+                        }
+                    })
+                    navTotal();
+                })  
+            });
+            
+         </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/owlCarousel/src/js/owl.carousel.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        
+    </body>
+</html>

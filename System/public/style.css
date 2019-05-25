@@ -1,0 +1,107 @@
+
+.centraliza{
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.section-degrade{
+    height:100vh;
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#efefef+51,333333+51 */
+    background: rgb(239,239,239); /* Old browsers */
+    background: -moz-linear-gradient(-45deg, rgba(239,239,239,1) 51%, rgba(51,51,51,1) 51%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, rgba(239,239,239,1) 51%,rgba(51,51,51,1) 51%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, rgba(239,239,239,1) 51%,rgba(51,51,51,1) 51%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#333333',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+.form-baixo{
+    border-radius: 25px;
+    -webkit-box-shadow: -3px -2px 5px 0px #333;
+    -moz-box-shadow: -3px -2px 5px 0px #333;
+    box-shadow: -3px -2px 5px 0px #333;
+    position: relative;
+    top: 30%;
+}
+.pointer{
+    cursor: pointer;
+}
+.button-config{
+    border-radius: 23px;
+    background-color: #fff;
+    border: 2px solid #333;
+}
+.button-config:hover{
+    border-radius: 23px;
+    background-color: #333;
+    color: #fff;
+    border: 2px solid #333;
+}
+.login{
+    font-size: 24px;
+    color: #333;
+}
+.w-15{
+    width: 15%;
+}
+.w-85{
+    width: 85%;
+}
+.color-white{
+    color: #eee;
+}
+.font-nav{
+    font-size: 20px;
+    color: #eee;
+}
+.salario-mes{
+    font-size: 36px;
+    color: #333;
+}
+.infos-salarios{
+    font-size: 20px;
+    color: #333;
+}
+hr{
+    height: 2px;
+    background-color: #333;
+}
+.concluir{
+    background-color: #2196F3;
+}
+.remover{
+    background-color: #f44336;
+}
+.font-concluir{
+    color: #fff;
+}
+.font-remover{
+    color: #fff
+}
+a.a-none:hover{
+    text-decoration: inherit;
+    font-size: 24px;
+}
+.sombra-borda{
+    -webkit-box-shadow: -6px -8px 44px -23px rgba(0,0,0,0.75);
+    -moz-box-shadow: -6px -8px 44px -23px rgba(0,0,0,0.75);
+    box-shadow: -6px -8px 44px -23px rgba(0,0,0,0.75);
+}
+.metas{
+    font-size: 36px;
+    color: #333;
+}
+.scrollSpy{
+    position: relative;
+    left: 50%;
+    border:solid 1px #333;
+    height: 200px;
+    overflow-y: scroll;
+}
+.color-azul{
+    color: #2196F3
+}
+.color-verde{
+    color: #4CAF50;
+}
+.color-red{
+    color: #f44336
+}
